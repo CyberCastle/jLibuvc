@@ -1,4 +1,4 @@
-traget
+target
 build
 .DS_Store
-.log
+*.log

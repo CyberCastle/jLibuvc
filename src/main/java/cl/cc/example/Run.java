@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cl.cc.example;
 
 import cl.cc.jlibuvc.UVCController;
@@ -13,13 +8,8 @@ import cl.cc.jlibuvc.UVCController.UVCFrame;
 import cl.cc.jlibuvc.UVCController.UVCFrameCallback;
 import cl.cc.jlibuvc.UVCController.UVCFrameFormat;
 import cl.cc.jlibuvc.UVCController.UVCStreamCtrl;
+import cl.cc.jlibuvc.Utils;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImageHeader;
-import static org.bytedeco.javacpp.opencv_core.cvReleaseImageHeader;
-import static org.bytedeco.javacpp.opencv_core.cvSetData;
-import org.bytedeco.javacv.CanvasFrame;
 
 /**
  *
@@ -46,7 +36,8 @@ public class Run {
 //        System.out.println(desc.serialNumber().getString());
 //        System.out.println(desc.product());
 //        UVCController.uvc_free_device_descriptor(desc);
-        int res = UVCController.uvc_get_stream_ctrl_format_size(devh, sctrl, 0, 1280, 720, 30);
+        
+        int res = UVCController.uvc_get_stream_ctrl_format_size(devh, sctrl, UVCFrameFormat.UVC_FRAME_FORMAT_MJPEG, 1280, 720, 30);
         System.out.println(res);
 
         if (res != 0) {
@@ -57,36 +48,27 @@ public class Run {
         System.out.println("Frame Index: " + sctrl.bFrameIndex());
         System.out.println("Max Video Frame Buffer Size: " + sctrl.dwMaxVideoFrameSize());
         System.out.println("Frame Interval: " + sctrl.dwFrameInterval());
-       
-        
 
-        boolean sw = true;
-        if (sw) {
-            return;
-        }
-        final CanvasFrame windows = new CanvasFrame("Sonria!!!!!! :-)", 1.0);
+        final DemoFrame windows = new DemoFrame("Sonria!!!!!! :-)");
+        windows.setSize(1280, 720);
         UVCFrameCallback callback = new UVCFrameCallback() {
 
             @Override
             public void call(UVCFrame frame, Pointer user_ptr) {
 
-                UVCFrame cframe = UVCController.uvc_allocate_frame(frame.width() * frame.height() * 3);
+                try {
+                    UVCFrame cframe = UVCController.uvc_allocate_frame(frame.width() * frame.height());
+                    int convres = UVCController.uvc_mjpeg2rgb(frame, cframe);
+                    if (convres != 0) {
+                        return;
+                    }
+                    
+                    windows.showImage(Utils.getImage(cframe));
 
-                int convres = UVCController.uvc_mjpeg2rgb(frame, cframe);
-
-                if (convres != 0) {
-                    return;
+                    UVCController.uvc_free_frame(cframe);
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
                 }
-
-                
-
-                IplImage grabbedImage = cvCreateImageHeader(opencv_core.cvSize(cframe.width(), cframe.height()), opencv_core.IPL_DEPTH_8S, 3);
-                cvSetData(grabbedImage, cframe.data(), cframe.width() * 3);
-
-                windows.showImage(grabbedImage);
-
-                cvReleaseImageHeader(grabbedImage);
-                UVCController.uvc_free_frame(cframe);
             }
 
         };
@@ -106,5 +88,4 @@ public class Run {
         UVCController.uvc_unref_device(dev);
         UVCController.uvc_exit(ctx);
     }
-
 }

@@ -9,8 +9,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <!--<platform>${os.name}-${os.arch}</platform>-->
-        <platform>macosx-${os.arch}</platform>
+        <platform>${os.name}-${os.arch}</platform>
     </properties>
     
     <build>
@@ -79,7 +78,7 @@
                         <configuration>
                             <executable>java</executable>
                             <!--<commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.8.jar -nocompile -Dcompiler.linkpath=${basedir}/target/classes/macosx-x86_64 -Dcompiler.includepath=${basedir}/src/main/jni -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>-->
-                            <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.8.jar -Dcompiler.linkpath=/usr/local/lib -Dcompiler.includepath=/usr/local/include -Xcompiler -luvc -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
+                            <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.9.jar -Dcompiler.linkpath=/usr/local/lib -Dcompiler.includepath=/usr/local/include -Xcompiler -luvc -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
@@ -90,8 +89,78 @@
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>javacv</artifactId>
-            <version>0.8</version>
+            <artifactId>javacpp</artifactId>
+            <version>0.9</version>
         </dependency>
     </dependencies>
+    
+    <!-- Based in bytedeco presets -->
+    <profiles>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                </os>
+            </activation>
+            <properties>
+                <os.name>linux</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <os.name>macosx</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <os.name>windows</os.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>i686</id>
+            <activation>
+                <os>
+                    <arch>i686</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>amd64</id>
+            <activation>
+                <os>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>x86-64</id>
+            <activation>
+                <os>
+                    <arch>x86-64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>x86_64</os.arch>
+            </properties>
+        </profile>
+    </profiles>
 </project>
