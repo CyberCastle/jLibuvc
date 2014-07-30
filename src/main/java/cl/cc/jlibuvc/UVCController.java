@@ -78,10 +78,6 @@ public class UVCController implements InfoMapper {
         public static final int UVC_GET_DEF = 0x87;
     };
 
-
-
-
-
     public static interface UVCStatusClass {
 
         public static final int UVC_STATUS_CLASS_CONTROL = 0x10;
@@ -110,9 +106,7 @@ public class UVCController implements InfoMapper {
                 .put(new Info("uvc_device_descriptor").pointerTypes("UVCDeviceDescriptor"))
                 .put(new Info("uvc_stream_ctrl_t").pointerTypes("UVCStreamCtrl"))
                 .put(new Info("timeval").pointerTypes("TimeVal"))
-                .put(new Info("uvc_frame").pointerTypes("UVCFrame"))
-                //.put(new Info("uvc_frame_callback_t").pointerTypes("UVCFrameCallback"))
-                ;
+                .put(new Info("uvc_frame").pointerTypes("UVCFrame"));
     }
 
     @Opaque
@@ -382,7 +376,11 @@ public class UVCController implements InfoMapper {
 
         private native void allocate();
 
-        public abstract void call(UVCFrame frame, Pointer user_ptr);
+        protected void call(UVCFrame frame, Pointer user_ptr){
+            this.call(frame);
+        }
+        
+        public abstract void call(UVCFrame frame);
     }
     
     /* Métodos para detectar y abrir un dispositivo UVC */
@@ -411,7 +409,11 @@ public class UVCController implements InfoMapper {
 
     public static native int uvc_probe_stream_ctrl(UVCDeviceHandle devh, UVCStreamCtrl ctrl);
 
-    public static native int uvc_start_streaming(UVCDeviceHandle devh, UVCStreamCtrl ctrl, UVCFrameCallback cb, Pointer user_ptr, byte flags);
+    private static native int uvc_start_streaming(UVCDeviceHandle devh, UVCStreamCtrl ctrl, UVCFrameCallback cb, Pointer user_ptr, byte flags);
+    
+    public static int uvc_start_streaming(UVCDeviceHandle devh, UVCStreamCtrl ctrl, UVCFrameCallback cb, byte flags){
+        return uvc_start_streaming(devh, ctrl, cb, new Pointer(), flags);
+    }
 
     public static native void uvc_stop_streaming(UVCDeviceHandle devh);
     
@@ -527,6 +529,7 @@ public class UVCController implements InfoMapper {
     /* Métodos para la manipulación de Frames */
     public static native int uvc_any2rgb(UVCFrame fin, UVCFrame fout);
 
+    /* Hay que tener habilitado libjpeg */
     public static native int uvc_mjpeg2rgb(UVCFrame fin, UVCFrame fout);
 
     public static native UVCFrame uvc_allocate_frame(@Cast("size_t") int data_bytes);

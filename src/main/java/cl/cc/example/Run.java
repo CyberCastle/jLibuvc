@@ -9,7 +9,6 @@ import cl.cc.jlibuvc.UVCController.UVCFrameCallback;
 import cl.cc.jlibuvc.UVCController.UVCFrameFormat;
 import cl.cc.jlibuvc.UVCController.UVCStreamCtrl;
 import cl.cc.jlibuvc.Utils;
-import org.bytedeco.javacpp.Pointer;
 
 /**
  *
@@ -36,7 +35,6 @@ public class Run {
 //        System.out.println(desc.serialNumber().getString());
 //        System.out.println(desc.product());
 //        UVCController.uvc_free_device_descriptor(desc);
-        
         int res = UVCController.uvc_get_stream_ctrl_format_size(devh, sctrl, UVCFrameFormat.UVC_FRAME_FORMAT_MJPEG, 1280, 720, 30);
         System.out.println(res);
 
@@ -54,7 +52,7 @@ public class Run {
         UVCFrameCallback callback = new UVCFrameCallback() {
 
             @Override
-            public void call(UVCFrame frame, Pointer user_ptr) {
+            public void call(UVCFrame frame) {
 
                 try {
                     UVCFrame cframe = UVCController.uvc_allocate_frame(frame.width() * frame.height());
@@ -62,7 +60,7 @@ public class Run {
                     if (convres != 0) {
                         return;
                     }
-                    
+
                     windows.showImage(Utils.getImage(cframe));
 
                     UVCController.uvc_free_frame(cframe);
@@ -73,8 +71,8 @@ public class Run {
 
         };
 
-        UVCController.uvc_set_ae_mode(devh, (byte) 3);
-        UVCController.uvc_start_streaming(devh, sctrl, callback, new Pointer(), (byte) 0);
+        UVCController.uvc_set_focus_auto(devh, (byte) 0);
+        UVCController.uvc_start_streaming(devh, sctrl, callback, (byte) 0);
 
         //Thread.sleep(5000); /* 5 segundos de video */
         while (windows.isActive()) {
