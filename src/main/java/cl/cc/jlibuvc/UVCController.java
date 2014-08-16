@@ -11,8 +11,11 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
 import org.bytedeco.javacpp.annotation.ByPtrPtr;
+import org.bytedeco.javacpp.annotation.ByRef;
 import org.bytedeco.javacpp.annotation.ByVal;
 import org.bytedeco.javacpp.annotation.Cast;
+import org.bytedeco.javacpp.annotation.Const;
+import org.bytedeco.javacpp.annotation.MemberGetter;
 import org.bytedeco.javacpp.annotation.Name;
 import org.bytedeco.javacpp.annotation.Opaque;
 import org.bytedeco.javacpp.annotation.Platform;
@@ -62,9 +65,32 @@ public class UVCController implements InfoMapper {
         public static final int UVC_FRAME_FORMAT_BGR = 6;
         public static final int UVC_FRAME_FORMAT_MJPEG = 7;
         public static final int UVC_FRAME_FORMAT_GRAY8 = 8;
-        public static final int UVC_FRAME_FORMAT_COUNT = 9;
+        public static final int UVC_FRAME_FORMAT_BY8 = 9;
+        public static final int UVC_FRAME_FORMAT_COUNT = 10;
     };
     
+    /**
+     * VideoStreaming interface descriptor subtype (A.6)
+     */
+    public static interface UVCVideoStreamingDescSubtype {
+
+        public static final int UVC_VS_UNDEFINED = 0x00;
+        public static final int UVC_VS_INPUT_HEADER = 0x01;
+        public static final int UVC_VS_OUTPUT_HEADER = 0x02;
+        public static final int UVC_VS_STILL_IMAGE_FRAME = 0x03;
+        public static final int UVC_VS_FORMAT_UNCOMPRESSED = 0x04;
+        public static final int UVC_VS_FRAME_UNCOMPRESSED = 0x05;
+        public static final int UVC_VS_FORMAT_MJPEG = 0x06;
+        public static final int UVC_VS_FRAME_MJPEG = 0x07;
+        public static final int UVC_VS_FORMAT_MPEG2TS = 0x0a;
+        public static final int UVC_VS_FORMAT_DV = 0x0c;
+        public static final int UVC_VS_COLORFORMAT = 0x0d;
+        public static final int UVC_VS_FORMAT_FRAME_BASED = 0x10;
+        public static final int UVC_VS_FRAME_FRAME_BASED = 0x11;
+        public static final int UVC_VS_FORMAT_STREAM_BASED = 0x12;
+    };
+
+
     public static interface UVCReqCode {
 
         public static final int UVC_RC_UNDEFINED = 0x00;
@@ -99,16 +125,31 @@ public class UVCController implements InfoMapper {
 
     @Override
     public void map(InfoMap infoMap) {
-        infoMap.put(new Info("uvc_device").pointerTypes("UVCDevice"))
+        infoMap.put(new Info("libusb_context").pointerTypes("LibUSBContext"))
+                .put(new Info("uvc_device").pointerTypes("UVCDevice"))
                 .put(new Info("uvc_device_handle").pointerTypes("UVCDeviceHandle"))
                 .put(new Info("uvc_context").pointerTypes("UVCContext"))
-                .put(new Info("libusb_context").pointerTypes("LibUSBContext"))
+                .put(new Info("uvc_streaming_interface").pointerTypes("UVCStreamingInterface"))
                 .put(new Info("uvc_device_descriptor").pointerTypes("UVCDeviceDescriptor"))
                 .put(new Info("uvc_stream_ctrl_t").pointerTypes("UVCStreamCtrl"))
                 .put(new Info("timeval").pointerTypes("TimeVal"))
-                .put(new Info("uvc_frame").pointerTypes("UVCFrame"));
+                .put(new Info("uvc_frame").pointerTypes("UVCFrame"))
+                .put(new Info("uvc_frame_desc").pointerTypes("UVCFrameDesc"))
+                .put(new Info("uvc_format_desc").pointerTypes("UVCFormatDesc"));
     }
+    
+    @Opaque
+    @Name("libusb_context")
+    public static class LibUSBContext extends Pointer {
 
+        public LibUSBContext() {
+        }
+
+        public LibUSBContext(Pointer p) {
+            super(p);
+        }
+    }
+    
     @Opaque
     @Name("uvc_device")
     public static class UVCDevice extends Pointer {
@@ -146,13 +187,13 @@ public class UVCController implements InfoMapper {
     }
 
     @Opaque
-    @Name("libusb_context")
-    public static class LibUSBContext extends Pointer {
+    @Name("uvc_streaming_interface")
+    public static class UVCStreamingInterface extends Pointer {
 
-        public LibUSBContext() {
+        public UVCStreamingInterface() {
         }
 
-        public LibUSBContext(Pointer p) {
+        public UVCStreamingInterface(Pointer p) {
             super(p);
         }
     }
@@ -262,10 +303,14 @@ public class UVCController implements InfoMapper {
         public native @Cast("uint32_t") int wDelay(); public native UVCStreamCtrl wDelay(int wDelay);
         public native @Cast("uint32_t") int dwMaxVideoFrameSize(); public native UVCStreamCtrl dwMaxVideoFrameSize(int dwMaxVideoFrameSize);
         public native @Cast("uint32_t") int dwMaxPayloadTransferSize(); public native UVCStreamCtrl dwMaxPayloadTransferSize(int dwMaxPayloadTransferSize);
-
+        public native @Cast("uint32_t") int dwClockFrequency(); public native UVCStreamCtrl dwClockFrequency(int dwClockFrequency);
+        public native @Cast("uint8_t") byte bmFramingInfo();public native UVCStreamCtrl bmFramingInfo(byte bmFramingInfo);
+        public native @Cast("uint8_t") byte bPreferredVersion();public native UVCStreamCtrl bPreferredVersion(byte bPreferredVersion);
+        public native @Cast("uint8_t") byte bMinVersion();public native UVCStreamCtrl bMinVersion(byte bMinVersion);
+        public native @Cast("uint8_t") byte bMaxVersion();public native UVCStreamCtrl bMaxVersion(byte bMaxVersion);
+        public native @Cast("uint8_t") byte bInterfaceNumber(); public native UVCStreamCtrl bInterfaceNumber(byte bInterfaceNumber);
         /**
          * @todo add UVC 1.1 parameters */
-        public native @Cast("uint8_t") byte bInterfaceNumber(); public native UVCStreamCtrl bInterfaceNumber(byte bInterfaceNumber);
     }
 
     @Name("timeval")
@@ -323,7 +368,7 @@ public class UVCController implements InfoMapper {
         public native Pointer data(); public native UVCFrame data(Pointer data);
         
         /** Size of image data buffer */
-        public native @Cast("size_t")int data_bytes(); public native UVCFrame data_bytes(int data_bytes);
+        public native @Cast("size_t") int data_bytes(); public native UVCFrame data_bytes(int data_bytes);
         
         /** Width of image in pixels */
         public native @Cast("uint32_t") int width(); public native UVCFrame width(int width);    
@@ -335,7 +380,7 @@ public class UVCController implements InfoMapper {
         public native @Cast("uvc_frame_format") int frame_format(); public native UVCFrame frame_format(int frame_format);        
         
         /** Number of bytes per horizontal line (undefined for compressed format) */          
-        public native @Cast("size_t")int step(); public native UVCFrame step(int step);
+        public native @Cast("size_t") int step(); public native UVCFrame step(int step);
 
         /** Frame number (may skip, but is strictly monotonically increasing) */
         public native @Cast("uint32_t") int sequence(); public native UVCFrame sequence(int sequence);
@@ -354,6 +399,124 @@ public class UVCController implements InfoMapper {
         * Set this field to zero if you are supplying the buffer.
         */
         public native @Cast("uint8_t") byte library_owns_data(); public native UVCFrame library_owns_data(byte library_owns_data);
+    }
+    
+    @Name("uvc_frame_desc")
+    public static class UVCFrameDesc extends Pointer {
+        
+        static {
+            Loader.load();
+        }
+
+        public UVCFrameDesc() {
+            allocate();
+        }
+
+        public UVCFrameDesc(int size) {
+            allocateArray(size);
+        }
+
+        public UVCFrameDesc(Pointer p) {
+            super(p);
+        }
+
+        private native void allocate();
+        private native void allocateArray(int size);    
+    
+        public native UVCFormatDesc parent(); public native UVCFrameDesc parent(UVCFormatDesc parent);
+        public native UVCFrameDesc prev(); public native UVCFrameDesc prev(UVCFrameDesc prev);
+        public native UVCFrameDesc next(); public native UVCFrameDesc next(UVCFrameDesc next);
+    
+        /** Type of frame, such as JPEG frame or uncompressed frame */
+        public native @Cast("uvc_vs_desc_subtype") int bDescriptorSubtype(); public native UVCFrameDesc bDescriptorSubtype(int bDescriptorSubtype);
+        /** Index of the frame within the list of specs available for this format */
+        public native @Cast("uint8_t") byte bFrameIndex(); public native UVCFrameDesc bFrameIndex(byte bFrameIndex);
+        public native @Cast("uint8_t") byte bmCapabilities(); public native UVCFrameDesc bmCapabilities(byte bmCapabilities);
+        /** Image width */
+        public native @Cast("uint16_t") short wWidth(); public native UVCFrameDesc wWidth(short wWidth);
+        /** Image height */
+        public native @Cast("uint16_t") short wHeight(); public native UVCFrameDesc wHeight(short wHeight);
+        /** Bitrate of corresponding stream at minimal frame rate */
+        public native @Cast("uint32_t") int dwMinBitRate(); public native UVCFrameDesc dwMinBitRate(int dwMinBitRate);
+        /** Bitrate of corresponding stream at maximal frame rate */
+        public native @Cast("uint32_t") int dwMaxBitRate(); public native UVCFrameDesc dwMaxBitRate(int dwMaxBitRate);
+        /** Maximum number of bytes for a video frame */
+        public native @Cast("uint32_t") int dwMaxVideoFrameBufferSize(); public native UVCFrameDesc dwMaxVideoFrameBufferSize(int dwMaxVideoFrameBufferSize);
+        /** Default frame interval (in 100ns units) */
+        public native @Cast("uint32_t") int dwDefaultFrameInterval(); public native UVCFrameDesc dwDefaultFrameInterval(int dwDefaultFrameInterval);
+        /** Minimum frame interval for continuous mode (100ns units) */
+        public native @Cast("uint32_t") int dwMinFrameInterval(); public native UVCFrameDesc dwMinFrameInterval(int dwMinFrameInterval);
+        /** Maximum frame interval for continuous mode (100ns units) */
+        public native @Cast("uint32_t") int dwMaxFrameInterval(); public native UVCFrameDesc dwMaxFrameInterval(int dwMaxFrameInterval);
+        /** Granularity of frame interval range for continuous mode (100ns) */
+        public native @Cast("uint32_t") int dwFrameIntervalStep(); public native UVCFrameDesc dwFrameIntervalStep(int dwFrameIntervalStep);
+        /** Frame intervals */
+        public native @Cast("uint8_t") byte bFrameIntervalType(); public native UVCFrameDesc bFrameIntervalType(byte bFrameIntervalType);
+        /** number of bytes per line */
+        public native @Cast("uint32_t") int dwBytesPerLine(); public native UVCFrameDesc dwBytesPerLine(int dwBytesPerLine);
+        /** Available frame rates, zero-terminated (in 100ns units) */
+        public native @Cast("uint32_t *") IntBuffer intervals(); public native UVCFrameDesc intervals(IntBuffer intervals);
+    }
+    
+    /** Format descriptor
+    *
+    * A "format" determines a stream's image type (e.g., raw YUYV or JPEG)
+    * and includes many "frame" configurations.
+    */
+    @Name("uvc_format_desc")
+    public static class UVCFormatDesc extends Pointer {
+        
+        static {
+            Loader.load();
+        }
+
+        public UVCFormatDesc() {
+            allocate();
+        }
+
+        public UVCFormatDesc(int size) {
+            allocateArray(size);
+        }
+
+        public UVCFormatDesc(Pointer p) {
+            super(p);
+        }
+
+        private native void allocate();
+        private native void allocateArray(int size); 
+                      
+        public native UVCStreamingInterface parent(); public native UVCFormatDesc parent(UVCStreamingInterface parent);
+        public native UVCFormatDesc prev(); public native UVCFormatDesc prev(UVCFormatDesc prev);
+        public native UVCFormatDesc next(); public native UVCFormatDesc next(UVCFormatDesc next);       
+        
+        /** Type of image stream, such as JPEG or uncompressed. */
+        public native @Cast("uvc_vs_desc_subtype") int bDescriptorSubtype(); public native UVCFormatDesc bDescriptorSubtype(int bDescriptorSubtype);
+        /** Identifier of this format within the VS interface's format list */
+        public native @Cast("uint8_t") byte bFormatIndex(); public native UVCFormatDesc bFormatIndex(byte bFormatIndex);
+        public native @Cast("uint8_t") byte bNumFrameDescriptors(); public native UVCFormatDesc bNumFrameDescriptors(byte bNumFrameDescriptors);
+        
+        /** Format specifier Union */
+        public native @Cast("uint8_t") byte guidFormat(int pos); public native UVCFormatDesc guidFormat(int pos, byte guidFormat);
+        @MemberGetter public native @Cast("uint8_t *") BytePointer guidFormat();
+        public native @Cast("uint8_t") byte fourccFormat(int pos); public native UVCFormatDesc fourccFormat(int pos, byte fourccFormat);
+        @MemberGetter public native @Cast("uint8_t *") BytePointer fourccFormat();
+
+        /** Format-specific data Union */
+        /** BPP for uncompressed stream */
+        public native @Cast("uint8_t") byte bBitsPerPixel(); public native UVCFormatDesc bBitsPerPixel(byte bBitsPerPixel);
+        /** Flags for JPEG stream */
+        public native @Cast("uint8_t") byte bmFlags(); public native UVCFormatDesc bmFlags(byte bmFlags);
+
+        /** Default {uvc_frame_desc} to choose given this format */
+        public native @Cast("uint8_t") byte bDefaultFrameIndex(); public native UVCFormatDesc bDefaultFrameIndex(byte bDefaultFrameIndex);
+        public native @Cast("uint8_t") byte bAspectRatioX(); public native UVCFormatDesc bAspectRatioX(byte bAspectRatioX);
+        public native @Cast("uint8_t") byte bAspectRatioY(); public native UVCFormatDesc bAspectRatioY(byte bAspectRatioY);
+        public native @Cast("uint8_t") byte bmInterlaceFlags(); public native UVCFormatDesc bmInterlaceFlags(byte bmInterlaceFlags);
+        public native @Cast("uint8_t") byte bCopyProtect(); public native UVCFormatDesc bCopyProtect(byte bCopyProtect);
+        public native @Cast("uint8_t") byte bVariableSize(); public native UVCFormatDesc bVariableSize(byte bVariableSize);
+        
+        /** Available frame specifications for this format */
+        public native UVCFrameDesc frame_descs(); public native UVCFormatDesc frame_descs(UVCFrameDesc frame_descs);
     }
     
     /** A callback function to handle incoming assembled UVC frames
@@ -396,6 +559,8 @@ public class UVCController implements InfoMapper {
     public static native int uvc_get_device_descriptor(UVCDevice dev, @Cast("uvc_device_descriptor**") PointerPointer desc);
 
     public static native void uvc_free_device_descriptor(UVCDeviceDescriptor desc);
+    
+    public static native @Const UVCFormatDesc uvc_get_format_descs(UVCDeviceHandle devh);
 
     /* Métodos para cerrar un dispositivo UVC */
     public static native void uvc_close(UVCDeviceHandle devh);
