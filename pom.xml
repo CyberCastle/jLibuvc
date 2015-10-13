@@ -70,7 +70,7 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.4.0</version>
@@ -83,13 +83,60 @@
                         </goals>
                         <configuration>
                             <executable>java</executable>
-                            <!--<commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.8.jar -nocompile -Dcompiler.linkpath=${basedir}/target/classes/macosx-x86_64 -Dcompiler.includepath=${basedir}/src/main/jni -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>-->
+                            <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.8.jar -nocompile -Dcompiler.linkpath=${basedir}/target/classes/macosx-x86_64 -Dcompiler.includepath=${basedir}/src/main/jni -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
                             <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-1.0.jar -Dplatform.linkpath=/usr/local/lib -Dplatform.includepath=/usr/local/include -Xcompiler -luvc -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            
+            </plugin>-->
+            <plugin>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>javacpp</artifactId>
+                <version>1.0</version>
+                <configuration>
+                    <properties>${platform.properties}</properties>
+                    <propertyKeysAndValues>
+                        <property>
+                            <name>platform.root</name>
+                            <value>${platform.root}</value>
+                        </property>
+                        <property>
+                            <name>platform.compiler</name>
+                            <value>${platform.compiler}</value>
+                        </property>
+                    </propertyKeysAndValues>
+                    <classPath>target/classes</classPath>
+                    <includePath>/usr/local/include</includePath>
+                    <linkPath>/usr/local/lib</linkPath>
+                    <compilerOptions>
+                        <param>-luvc</param>
+                    </compilerOptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/classes</outputDirectory>
+                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>process-classes</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
+                            <copyLibs>true</copyLibs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
         </plugins>
     </build>
     <dependencies>
