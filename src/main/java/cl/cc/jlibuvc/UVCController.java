@@ -703,5 +703,7 @@ public class UVCController implements InfoMapper {
 
     // added RH - implemented wrapper for printing a summary of camera's info
     public static native void uvc_print_diag(UVCDeviceHandle devh, @Cast("FILE*") Pointer fd);
-
+    
+    public static native int uvc_get_device_list(UVCContext ctx, @Cast("uvc_device***") @ByPtrPtr PointerPointer<?> uvcDevList);
+    public static native void uvc_free_device_list(@Cast("uvc_device**") @ByPtrPtr PointerPointer<?> uvcDevList, @Cast("uint8_t") byte unref_devices);
 }
