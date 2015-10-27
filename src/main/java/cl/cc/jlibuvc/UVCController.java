@@ -555,7 +555,8 @@ public class UVCController implements InfoMapper {
     public static native int uvc_open(UVCDevice dev, @ByPtrPtr UVCDeviceHandle devh);
 
     /* Métodos para obtener la descripción de un dispositivo UVC */
-    public static native int uvc_get_device_descriptor(UVCDevice dev, @Cast("uvc_device_descriptor**") PointerPointer desc);
+    // change RH parameterized raw pointer type to avoid alert in eclipse
+    public static native int uvc_get_device_descriptor(UVCDevice dev, @Cast("uvc_device_descriptor**") PointerPointer<?> desc);
 
     public static native void uvc_free_device_descriptor(UVCDeviceDescriptor desc);
     
@@ -699,4 +700,10 @@ public class UVCController implements InfoMapper {
     public static native UVCFrame uvc_allocate_frame(@Cast("size_t") int data_bytes);
 
     public static native void uvc_free_frame(UVCFrame frame);
+
+    // added RH - implemented wrapper for printing a summary of camera's info
+    public static native void uvc_print_diag(UVCDeviceHandle devh, @Cast("FILE*") Pointer fd);
+    
+    public static native int uvc_get_device_list(UVCContext ctx, @Cast("uvc_device***") @ByPtrPtr PointerPointer<?> uvcDevList);
+    public static native void uvc_free_device_list(@Cast("uvc_device**") @ByPtrPtr PointerPointer<?> uvcDevList, @Cast("uint8_t") byte unref_devices);
 }
