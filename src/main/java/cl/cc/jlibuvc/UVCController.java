@@ -117,6 +117,14 @@ public class UVCController implements InfoMapper {
         public static final int UVC_STATUS_ATTRIBUTE_FAILURE_CHANGE = 0x02;
         public static final int UVC_STATUS_ATTRIBUTE_UNKNOWN = 0xff;
     };
+    
+    public static interface UVCAutoExposure {
+ 
+    	public final static byte UVC_AUTO_EXPOSURE_MODE_MANUAL = 1;
+    	public final static byte UVC_AUTO_EXPOSURE_MODE_AUTO = 2;
+    	public final static byte UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY = 4;
+    	public final static byte UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY = 8;
+    );
 
     static {
         Loader.load();
