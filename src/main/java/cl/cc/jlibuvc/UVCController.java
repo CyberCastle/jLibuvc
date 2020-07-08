@@ -124,7 +124,7 @@ public class UVCController implements InfoMapper {
     	public final static byte UVC_AUTO_EXPOSURE_MODE_AUTO = 2;
     	public final static byte UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY = 4;
     	public final static byte UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY = 8;
-    );
+    };
 
     static {
         Loader.load();
