@@ -124,7 +124,43 @@
                     <generateBackupPoms>false</generateBackupPoms>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>javacpp</artifactId>
+                <version>1.5.3</version>
+                <configuration>
+                    <properties>${platform.properties}</properties>
+                    <propertyKeysAndValues>
+                        <property>
+                            <name>platform.root</name>
+                            <value>${platform.root}</value>
+                        </property>
+                        <property>
+                            <name>platform.compiler</name>
+                            <value>${platform.compiler}</value>
+                        </property>
+                    </propertyKeysAndValues>
+                    <classPath>target/classes</classPath>
+                    <includePath>/usr/local/include</includePath>
+                    <linkPath>/usr/local/lib</linkPath>
+                    <compilerOptions>
+                        <param>-luvc</param>
+                    </compilerOptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>process-classes</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
+                            <copyLibs>true</copyLibs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
