@@ -3,21 +3,22 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cl.cc</groupId>
     <artifactId>jLibUVC</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <platform>${os.name}-${os.arch}</platform>
     </properties>
-    
+
     <build>
+        <defaultGoal>exec:java</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.10</version>
+                <version>3.1.2</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -41,7 +42,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.2.0</version>
                 <configuration>
                     <finalName>${project.artifactId}</finalName>
                     <outputDirectory>${project.build.directory}/dist</outputDirectory>
@@ -49,14 +50,14 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>cl.cc.example.Run</mainClass>
+                            <mainClass>cl.cc.Run</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
+                <version>3.0.0-M4</version>
                 <configuration>
                     <forkMode>once</forkMode>
                     <environmentVariables>
@@ -70,83 +71,70 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-            <!--            <plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>build-jnilib</id>
-                        <phase>package</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>java</goal>
                         </goals>
-                        <configuration>
-                            <executable>java</executable>
-                            <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-0.8.jar -nocompile -Dcompiler.linkpath=${basedir}/target/classes/macosx-x86_64 -Dcompiler.includepath=${basedir}/src/main/jni -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
-                            <commandlineArgs>-jar ${project.build.directory}/dist/lib/javacpp-1.0.jar -Dplatform.linkpath=/usr/local/lib -Dplatform.includepath=/usr/local/include -Xcompiler -luvc -classpath target/classes cl.cc.jlibuvc.UVCController</commandlineArgs>
-                        </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
-            <plugin>
-                <groupId>org.bytedeco</groupId>
-                <artifactId>javacpp</artifactId>
-                <version>1.0</version>
                 <configuration>
-                    <properties>${platform.properties}</properties>
-                    <propertyKeysAndValues>
-                        <property>
-                            <name>platform.root</name>
-                            <value>${platform.root}</value>
-                        </property>
-                        <property>
-                            <name>platform.compiler</name>
-                            <value>${platform.compiler}</value>
-                        </property>
-                    </propertyKeysAndValues>
-                    <classPath>target/classes</classPath>
-                    <includePath>/usr/local/include</includePath>
-                    <linkPath>/usr/local/lib</linkPath>
-                    <compilerOptions>
-                        <param>-luvc</param>
-                    </compilerOptions>
+                    <mainClass>cl.cc.Run</mainClass>
+                    <arguments>-Dsun.java2d.opengl=True</arguments>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
                 <executions>
                     <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
+                        <id>enforce-versions</id>
                         <goals>
-                            <goal>build</goal>
+                            <goal>enforce</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>target/classes</outputDirectory>
-                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>process-classes</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
-                            <copyLibs>true</copyLibs>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.5.0</version>
+                                </requireMavenVersion>
+                            </rules>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <excludes></excludes>
+                    <generateBackupPoms>false</generateBackupPoms>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
-            <version>1.0</version>
+            <version>1.5.3</version>
         </dependency>
     </dependencies>
-    
+
     <!-- Based in bytedeco presets -->
     <profiles>
         <profile>
