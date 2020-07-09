@@ -9,6 +9,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <javacpp.cppbuild.skip>false</javacpp.cppbuild.skip> <!-- To skip execution of cppbuild.sh: -Djavacpp.cppbuild.skip=true -->
+        <javacpp.parser.skip>true</javacpp.parser.skip> <!-- To skip header file parsing phase: -Djavacpp.parser.skip=true -->
+        <javacpp.compiler.skip>false</javacpp.compiler.skip> <!-- To skip native compilation phase: -Djavacpp.compiler.skip=true -->
         <platform>${os.name}-${os.arch}</platform>
     </properties>
 
@@ -149,12 +152,27 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>process-classes</id>
+                        <id>javacpp.parser</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${javacpp.parser.skip}</skip>
+                            <outputDirectory>${project.build.sourceDirectory}</outputDirectory>
+                            <!-- Change to your package name -->
+                            <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>javacpp.compiler</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>build</goal>
                         </goals>
                         <configuration>
+                            <skip>${javacpp.compiler.skip}</skip>
+                            <!-- Change to your package name -->
                             <classOrPackageName>cl.cc.jlibuvc.UVCController</classOrPackageName>
                             <copyLibs>true</copyLibs>
                         </configuration>
@@ -167,6 +185,11 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp-platform</artifactId>
             <version>1.5.3</version>
         </dependency>
     </dependencies>
